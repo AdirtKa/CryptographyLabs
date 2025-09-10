@@ -3,7 +3,6 @@ import os
 
 
 def get_decrypt_key(encrypt_key: list[int]) -> list[int]:
-
     decrypt_key: list[int] = [0] * len(encrypt_key)
     for idx, val in enumerate(encrypt_key):
         decrypt_key[val] = idx
@@ -19,7 +18,7 @@ def add_letters(text: str, block_len: int) -> tuple[str, int]:
 
 
 def break_apart(text: str, block_len: int) -> list[str]:
-    parts: list[str] = [text[i: i+block_len] for i in range(0, len(text), block_len)]
+    parts: list[str] = [text[i: i + block_len] for i in range(0, len(text), block_len)]
     return parts
 
 
@@ -30,22 +29,22 @@ def encrypt_part(part: str, encrypt_key: list[int]) -> str:
     return encrypted_part
 
 
-
 def encrypt(text: str, encrypt_key: list[int]) -> tuple[str, int]:
     text, added_letters = add_letters(text, len(encrypt_key))
     parts: list[str] = break_apart(text, len(encrypt_key))
-    encrypted_parts= list(map(lambda x: encrypt_part(x, encrypt_key), parts))
+    encrypted_parts = list(map(lambda x: encrypt_part(x, encrypt_key), parts))
     return "".join(encrypted_parts), added_letters
 
 
 def decrypt(text: str, encrypt_key: list[int]) -> str:
     decrypt_key: list[int] = get_decrypt_key(encrypt_key)
-    decrypted_text = encrypt(text, decrypt_key)
+    decrypted_text, _ = encrypt(text, decrypt_key)
     return decrypted_text
 
+
 def get_new_key():
-    print("Введите новый ключ, он должен состоять из последовательных чисел\n" \
-    "От 0 до n - 1 в произвольном порядке (например 03124)")
+    print("Введите новый ключ, он должен состоять из последовательных чисел\n"
+          "От 0 до n - 1 в произвольном порядке (например 03124)")
     while True:
         new_key: str = input()
         if not new_key.isdigit():
@@ -61,6 +60,7 @@ def get_new_key():
             break
 
     return new_key_list
+
 
 def main() -> int:
     encrypt_key: list[int] = list(range(0, 4))
