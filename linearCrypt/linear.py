@@ -1,51 +1,68 @@
-from pydoc import text
-import string
-from random import randint
 import math
+import os
+import random
+import string
+
+alphabet = string.ascii_lowercase
+n = len(alphabet)
 
 
-alphabet: str = string.ascii_lowercase
-alphabet_length: int = len(alphabet)
-
-b: int = randint(1, 42)
-
-a = 4
-while math.gcd(a, alphabet_length) != 1:
-    a += 1
-
-print(f"{a=}, {alphabet_length=}")
+# Генерация ключей
+def gen_keys():
+    a = random.randint(2, n - 1)
+    while math.gcd(a, n) != 1:
+        a += 1
+    b = random.randint(0, n - 1)
+    return a, b
 
 
-def encrypt(plaintext: str, a: int, b: int) -> str:
-    ciphertext: str = ""
-    for char in plaintext:
-        if char in alphabet:
-            # Apply the linear encryption formula
-            new_index: int = (a * alphabet.index(char) + b) % alphabet_length
-            ciphertext += alphabet[new_index]
+def encrypt(msg, a, b):
+    out = ""
+    for ch in msg:
+        if ch in alphabet:
+            out += alphabet[(a * alphabet.index(ch) + b) % n]
+        elif ch.lower() in alphabet:
+            out += alphabet[(a * alphabet.index(ch.lower()) + b) % n].upper()
         else:
-            ciphertext += char
-    return ciphertext
+            out += ch
+    return out
 
 
-def decrypt(ciphertext: str, a: int, b: int) -> str:
-    plaintext: str = ""
-    a_inv: int = pow(a, -1, alphabet_length)  # Modular multiplicative inverse of a
-    for char in ciphertext:
-        if char in alphabet:
-            # Apply the linear decryption formula
-            old_index: int = (a_inv * (alphabet.index(char) - b)) % alphabet_length
-            plaintext += alphabet[old_index]
+def decrypt(msg, a, b):
+    out, a_inv = "", pow(a, -1, n)
+    for ch in msg:
+        if ch in alphabet:
+            out += alphabet[(a_inv * (alphabet.index(ch) - b)) % n]
+        elif ch.lower() in alphabet:
+            out += alphabet[(a_inv * (alphabet.index(ch.lower()) - b)) % n].upper()
         else:
-            plaintext += char
-    return plaintext
+            out += ch
+    return out
 
 
-text = "heаыllo  Даня world"
-encrypted = encrypt(text, a, b)
-decrypted = decrypt(encrypted, a, b)
-print("Original:", text)
-print("Encrypted:", encrypted)
-print("Decrypted:", decrypted)
+def main():
+    a, b = gen_keys()
+    while True:
+        os.system("cls" if os.name == "nt" else "clear")
+        print(f"Аффинный шифр (алфавит a-z). Текущие ключи: a={a}, b={b}")
+        print("1. Зашифровать сообщение")
+        print("2. Расшифровать сообщение")
+        print("3. Сгенерировать новые ключи")
+        print("4. Выйти")
+        c = input("Ваш выбор: ")
+        if c == "1":
+            m = input("Введите текст: ")
+            print("Шифротекст:", encrypt(m, a, b))
+            input("Enter...")
+        elif c == "2":
+            m = input("Введите шифротекст: ")
+            print("Расшифровка:", decrypt(m, a, b))
+            input("Enter...")
+        elif c == "3":
+            a, b = gen_keys()
+        elif c == "4":
+            break
 
-print(pow(5, -1, 26))
+
+if __name__ == "__main__":
+    main()

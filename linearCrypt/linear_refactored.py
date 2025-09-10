@@ -34,7 +34,7 @@ def find_coprime_starting_from(start: int, m: int) -> int:
 def validate_keys(a: int, b: int, m: int) -> None:
     """
     Валидация ключей аффинного шифра.
-    :raises ValueError: если ключи некорректны.
+    :raises ValueError: Если ключи некорректны.
     """
     if not is_coprime(a, m):
         raise ValueError(f"'a'={a} не взаимно просто с модулем {m}. Выберите другое 'a'.")
@@ -57,7 +57,7 @@ def mod_inverse(a: int, m: int) -> int:
 def _transform_char(ch: str, idx_transform) -> str:
     """
     Преобразовать символ через индексную трансформацию, сохранив регистр.
-    idx_transform: функция, принимающая индекс в алфавите и возвращающая новый индекс.
+    Idx_transform: функция, принимающая индекс в алфавите и возвращающая новый индекс.
     """
     # нижний регистр
     if ch.islower() and ch in ALPHABET:
@@ -78,11 +78,11 @@ def encrypt_affine(plaintext: str, a: int, b: int, alphabet: str = ALPHABET) -> 
     Зашифровать строку аффинным шифром.
     Шифруются символы латинского алфавита (a-z / A-Z); остальные сохраняются.
 
-    :param plaintext: исходный текст
+    :param plaintext: Исходный текст
     :param a: мультипликативный ключ (gcd(a, |alphabet|) == 1)
     :param b: аддитивный ключ (0 <= b < |alphabet|)
     :param alphabet: алфавит (по умолчанию a-z)
-    :return: шифртекст
+    :return: шифротекст
     """
     m = len(alphabet)
     validate_keys(a, b, m)
@@ -99,7 +99,7 @@ def decrypt_affine(ciphertext: str, a: int, b: int, alphabet: str = ALPHABET) ->
     """
     Расшифровать строку, зашифрованную аффинным шифром.
 
-    :param ciphertext: шифртекст
+    :param ciphertext: Шифротекст
     :param a: мультипликативный ключ
     :param b: аддитивный ключ
     :param alphabet: алфавит (по умолчанию a-z)
@@ -225,7 +225,7 @@ def main() -> int:
             input("\nEnter для продолжения...")
 
         elif choice == "5":
-            ct = input("\nВведите шифртекст для расшифрования: ")
+            ct = input("\nВведите шифротекст для расшифрования: ")
             try:
                 pt = decrypt_affine(ct, a, b)
                 print("\nРасшифрованный текст:")
