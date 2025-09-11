@@ -88,6 +88,7 @@ def decrypt_message(ciphertext: str, key: List[int]) -> str:
     """
     inv = invert_permutation(key)
     # используем тот же процесс, но с обратным ключом
+    ciphertext, _ = pad_message(ciphertext, len(inv))
     blocks = split_into_blocks(ciphertext, len(inv))
     plain_blocks = [permute_block(b, inv) for b in blocks]
     return "".join(plain_blocks)

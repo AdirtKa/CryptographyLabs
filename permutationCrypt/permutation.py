@@ -64,7 +64,10 @@ def get_new_key():
 
 def main() -> int:
     encrypt_key: list[int] = list(range(0, 4))
-    shuffle(encrypt_key)
+    encrypt_key = [2, 4, 0, 5, 3, 1]
+    # shuffle(encrypt_key)
+    # карлукларыукралкораллы
+    # руккларулкыалорркал а ыл
 
     while True:
         os.system("cls" if os.name == "nt" else "clear")
@@ -97,7 +100,7 @@ def main() -> int:
             input()
         elif choice == 4:
             encrypted_text = input("Введите зашифрованное сообщение: ")
-            decrypted_text, _ = decrypt(encrypted_text, encrypt_key)
+            decrypted_text = decrypt(encrypted_text, encrypt_key)
             print("Расшифрованное сообщение:", decrypted_text)
             print("Нажмите Enter для продолжения")
             input()

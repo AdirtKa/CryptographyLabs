@@ -38,8 +38,8 @@ def validate_keys(a: int, b: int, m: int) -> None:
     """
     if not is_coprime(a, m):
         raise ValueError(f"'a'={a} не взаимно просто с модулем {m}. Выберите другое 'a'.")
-    if not (0 <= b < m):
-        raise ValueError(f"'b'={b} должно быть в диапазоне [0, {m - 1}].")
+    # if not (0 <= b < m):
+    #     raise ValueError(f"'b'={b} должно быть в диапазоне [0, {m - 1}].")
 
 
 def mod_inverse(a: int, m: int) -> int:

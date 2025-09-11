@@ -7,7 +7,6 @@ alphabet = string.ascii_lowercase
 n = len(alphabet)
 
 
-# Генерация ключей
 def gen_keys():
     a = random.randint(2, n - 1)
     while math.gcd(a, n) != 1:
