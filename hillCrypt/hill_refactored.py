@@ -6,6 +6,7 @@ import numpy as np
 # Здесь используем всю таблицу Unicode (0..0x10FFFF).
 MODULUS: int = 1_114_111  # 0x110000 - 1
 
+
 # ===== Базовые числа и линейная алгебра над Z_m =====
 
 def _egcd(a: int, b: int) -> Tuple[int, int, int]:
@@ -18,6 +19,7 @@ def _egcd(a: int, b: int) -> Tuple[int, int, int]:
     g, x1, y1 = _egcd(b, a % b)
     return g, y1, x1 - (a // b) * y1
 
+
 def _modinv(a: int, m: int) -> int:
     """
     Мультипликативно обратное к a по модулю m.
@@ -28,6 +30,7 @@ def _modinv(a: int, m: int) -> int:
     if g != 1:
         raise ValueError(f"no inverse for {a} mod {m}")
     return x % m
+
 
 def _det_mod(A: np.ndarray, m: int) -> int:
     """
@@ -46,6 +49,7 @@ def _det_mod(A: np.ndarray, m: int) -> int:
         s = (s + cofactor) % m
     return s % m
 
+
 def _adjugate_mod(A: np.ndarray, m: int) -> np.ndarray:
     """
     Присоединённая матрица adj(A) по модулю m:
@@ -59,6 +63,7 @@ def _adjugate_mod(A: np.ndarray, m: int) -> np.ndarray:
             C[i, j] = ((-1) ** (i + j)) * _det_mod(minor, m)
     return (C.T % m)
 
+
 def has_inv_mod_matrix(key_matrix: np.ndarray, m: int) -> bool:
     """
     Проверяет существование обратной матрицы key_matrix по модулю m.
@@ -68,6 +73,7 @@ def has_inv_mod_matrix(key_matrix: np.ndarray, m: int) -> bool:
         raise ValueError("key_matrix must be a square matrix")
     detA = _det_mod(key_matrix % m, m)
     return gcd(detA, m) == 1
+
 
 def inv_mod_matrix(key_matrix: np.ndarray, m: int) -> np.ndarray:
     """
@@ -82,6 +88,7 @@ def inv_mod_matrix(key_matrix: np.ndarray, m: int) -> np.ndarray:
     d_inv = _modinv(d, m)
     adj = _adjugate_mod(K, m)
     return (d_inv * adj) % m
+
 
 # ===== Текстовые утилиты для шифра Хилла =====
 
@@ -98,6 +105,7 @@ def pad_plaintext(plaintext: str, block_size: int, pad_char: str = "а") -> Tupl
         plaintext = plaintext + pad_char * pad_len
     return plaintext, pad_len
 
+
 def split_blocks(text: str, block_size: int) -> List[str]:
     """
     Делит строку на блоки фиксированного размера.
@@ -105,17 +113,20 @@ def split_blocks(text: str, block_size: int) -> List[str]:
     """
     return [text[i:i + block_size] for i in range(0, len(text), block_size)]
 
+
 def text_block_to_vector(block: str) -> np.ndarray:
     """
     Преобразует блок текста в вектор кодов Unicode (dtype=int64).
     """
     return np.fromiter((ord(ch) for ch in block), dtype=np.int64, count=len(block))
 
+
 def vector_to_text(vec: np.ndarray) -> str:
     """
     Преобразует вектор кодов Unicode обратно в строку (каждый элемент уже приведён по модулю).
     """
     return "".join(map(chr, map(int, vec)))
+
 
 # ===== Шифр Хилла =====
 
@@ -126,12 +137,14 @@ def hill_encrypt_block(plain_vec: np.ndarray, key_matrix: np.ndarray, m: int = M
     """
     return (plain_vec @ (key_matrix % m)) % m
 
+
 def hill_decrypt_block(cipher_vec: np.ndarray, inv_key_matrix: np.ndarray, m: int = MODULUS) -> np.ndarray:
     """
     Дешифрует один вектор блока: x = c · K^{-1} (mod m).
     cipher_vec — вектор формы (n,), inv_key_matrix — матрица (n, n).
     """
     return (cipher_vec @ (inv_key_matrix % m)) % m
+
 
 def hill_encrypt(plaintext: str, key_matrix: np.ndarray, modulus: int = MODULUS) -> str:
     """
@@ -148,10 +161,11 @@ def hill_encrypt(plaintext: str, key_matrix: np.ndarray, modulus: int = MODULUS)
     cipher_chunks: List[str] = []
     K = (key_matrix % modulus).astype(np.int64, copy=False)
     for b in blocks:
-        x = text_block_to_vector(b)                     # shape: (n,)
-        c = hill_encrypt_block(x, K, modulus)           # shape: (n,)
+        x = text_block_to_vector(b)  # shape: (n,)
+        c = hill_encrypt_block(x, K, modulus)  # shape: (n,)
         cipher_chunks.append(vector_to_text(c))
     return "".join(cipher_chunks)
+
 
 def hill_decrypt(ciphertext: str, key_matrix: np.ndarray, modulus: int = MODULUS) -> str:
     """
@@ -170,10 +184,11 @@ def hill_decrypt(ciphertext: str, key_matrix: np.ndarray, modulus: int = MODULUS
 
     plain_chunks: List[str] = []
     for b in blocks:
-        c = text_block_to_vector(b)                     # shape: (n,)
-        x = hill_decrypt_block(c, K_inv, modulus)       # shape: (n,)
+        c = text_block_to_vector(b)  # shape: (n,)
+        x = hill_decrypt_block(c, K_inv, modulus)  # shape: (n,)
         plain_chunks.append(vector_to_text(x))
     return "".join(plain_chunks)
+
 
 # ===== Пример использования =====
 
@@ -193,12 +208,13 @@ def main() -> int:
 
     plaintext = "Adirtka"
     ciphertext = hill_encrypt(plaintext, key_matrix, MODULUS)
-    decrypted  = hill_decrypt(ciphertext, key_matrix, MODULUS)
+    decrypted = hill_decrypt(ciphertext, key_matrix, MODULUS)
 
     print(f"plaintext = {plaintext!r}")
     print(f"ciphertext = {ciphertext!r}")
     print(f"decrypted  = {decrypted!r}")
     return 0
+
 
 if __name__ == "__main__":
     main()
