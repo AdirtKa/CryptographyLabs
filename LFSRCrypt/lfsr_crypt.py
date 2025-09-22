@@ -20,7 +20,6 @@ def xor_bits(a: list[int], b: list[int]) -> list[int]:
 
 def main():
     # значения по умолчанию
-    length = 4
     seed = 0b1011
     taps = [0, 1]
 
@@ -39,15 +38,14 @@ def main():
             break
 
         elif choice == "1":
-            print(f"length = {length}")
-            print(f"seed   = {bin(seed)} ({seed})")
-            print(f"taps   = {taps}")
+            print(f"состояние   = {bin(seed)} ({seed})")
+            print(f"биты обратной связи   = {taps}")
 
         elif choice == "2":
             try:
-                length = int(input("Длина регистра: "))
                 seed_str = input("Начальное состояние (в двоичном формате, напр. 1011): ").strip()
                 seed = int(seed_str, 2)
+                length = len(seed_str)
                 taps_str = input("Taps (через запятую, индексы 0=LSB): ").strip()
                 taps = [int(x) for x in taps_str.split(",") if x.strip()]
 
@@ -71,7 +69,7 @@ def main():
                 print("Пустой ввод.")
                 continue
 
-            lfsr = LFSR(length, seed, taps)
+            lfsr = LFSR(seed, taps)
             bits = text_to_bits(text)
             ks = lfsr.keystream(len(bits))
             cipher_bits = xor_bits(bits, ks)
@@ -85,7 +83,7 @@ def main():
                 continue
 
             bits = [int(b) for b in cipher_str]
-            lfsr = LFSR(length, seed, taps)
+            lfsr = LFSR(seed, taps)
             ks = lfsr.keystream(len(bits))
             plain_bits = xor_bits(bits, ks)
 
