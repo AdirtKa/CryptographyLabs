@@ -52,29 +52,29 @@ def main() -> int:
         print("4. Расшифровать сообщение")
         print("5. Выйти")
 
-        choice: int = int(input("Введите номер действия: "))
-        if choice == 1:
+        choice: str = input("Введите номер действия: ")
+        if choice == '1':
             print("Ключи шифрования:")
             print("ключ:", encrypt_key)
             print("Нажмите Enter для продолжения")
             input()
-        elif choice == 2:
+        elif choice == '2':
             encrypt_key = get_new_key()
             print("Ключ принят успешно, нажмите Enter для продолжения")
             input()
-        elif choice == 3:
+        elif choice == '3':
             message = input("Введите сообщение для шифрования: ")
             encrypted_text = encrypt(message, encrypt_key)
             print("Зашифрованное сообщение:", encrypted_text)
             print("Нажмите Enter для продолжения")
             input()
-        elif choice == 4:
+        elif choice == '4':
             encrypted_text = input("Введите зашифрованное сообщение: ")
             decrypted_text = decrypt(encrypted_text, encrypt_key)
             print("Расшифрованное сообщение:", decrypted_text)
             print("Нажмите Enter для продолжения")
             input()
-        elif choice == 5:
+        elif choice == '5':
             print("Выход из программы.")
             break
         else:
