@@ -167,7 +167,7 @@ def get_decimal_from_middle(bits_list):
     return int(binary_string, 2)
 
 
-def word_to_bits(word: str, encoding: str = "utf-8") -> list[int]:
+def word_to_bits(word: str, encoding: str = "latin-1") -> list[int]:
     """Преобразует строку в список битов (использует указанную кодировку)."""
     return [int(b) for byte in word.encode(encoding) for b in f"{byte:08b}"]
 
@@ -320,7 +320,7 @@ def decrypt_message(ciphertext: str, key: str) -> str:
 
 def main() -> None:
     """Entry point."""
-    key: str = "FullHate"
+    key: str = "ecliptic"
 
     while True:
         clear_screen()
