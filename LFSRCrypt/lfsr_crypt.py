@@ -74,7 +74,7 @@ def main():
             lfsr_bits = lfsr.bits(len(bits))
             cipher_bits: list[int] = []
             for i in range(len(bits)):
-                cipher_bits.append(lfsr_bits.__next__() ^ bits[i])
+                cipher_bits.append(next(lfsr_bits) ^ bits[i])
             print("🔒 Шифротекст (биты):")
             print("".join(map(str, cipher_bits)))
 
