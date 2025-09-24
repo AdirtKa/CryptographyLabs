@@ -14,7 +14,7 @@ def encrypt(plaintext: str, lfsr: LFSR) -> bytes:
     for byte in string_bytes:
         new_byte: int = 0
         for i in range(bits_in_byte):
-            cipher_bit = ((byte >> i) & 0x1) ^ next(keystream)
+            cipher_bit = ((byte >> i) & 1) ^ next(keystream)
             new_byte |= cipher_bit << i
         encrypted.append(new_byte)
 
@@ -29,7 +29,7 @@ def decrypt(ciphertext: bytes, lfsr: LFSR) -> str:
     for byte in ciphertext:
         new_byte: int = 0
         for i in range(bits_in_byte):
-            plain_bit = ((byte >> i) & 0x1) ^ next(keystream)
+            plain_bit = ((byte >> i) & 1) ^ next(keystream)
             new_byte |= plain_bit << i
         decrypted.append(new_byte)
 
