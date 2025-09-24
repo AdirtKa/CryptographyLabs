@@ -1,4 +1,3 @@
-import math
 import os
 
 # БЛОК С МАТРИЦАМИ ПЕРЕСТАНОВОК
@@ -167,15 +166,19 @@ def get_decimal_from_middle(bits_list):
     return int(binary_string, 2)
 
 
-def word_to_bits(word: str, encoding: str = "latin-1") -> list[int]:
-    """Преобразует строку в список битов (использует указанную кодировку)."""
-    return [int(b) for byte in word.encode(encoding) for b in f"{byte:08b}"]
+def word_to_bits(data: bytes) -> list[int]:
+    """Преобразует байты в список битов."""
+    return [int(b) for byte in data for b in f"{byte:08b}"]
 
 
-def bits_to_word(bits: list[int], encoding: str = "latin-1") -> str:
-    """Обратно: список битов → строка (использует указанную кодировку)."""
+def bits_to_word(bits: list[int]) -> bytes:
+    """Обратно: список битов → байты."""
     bytes_list = [int("".join(map(str, bits[i:i + 8])), 2) for i in range(0, len(bits), 8)]
-    return bytes(bytes_list).decode(encoding, errors="ignore")
+    return bytes(bytes_list)
+
+
+def bytes_to_bits(data: bytes) -> str:
+    return ''.join(f"{byte:08b}" for byte in data)
 
 
 def shift_bits(bits: list[int], n: int) -> list[int]:
@@ -189,19 +192,19 @@ def permute_bits(bits: list[int], order: list[int]) -> list[int]:
     return [bits[i] for i in order]
 
 
-def get_new_key() -> str:
-    """Получает новый ключ от пользователя."""
-
+def get_new_key() -> bytes:
+    """Получает новый ключ от пользователя (ровно 8 байт в UTF-8)."""
     while True:
-        key = input("Введите новый ключ: ")
+        key_str = input("Введите новый ключ (ровно 8 байт в UTF-8): ")
+        key_bytes = key_str.encode("utf-8")
 
-        if len(key) != 8:
-            print("Длина ключа должна равняться 8")
+        if len(key_bytes) != 8:
+            print(f"Ошибка: ключ должен занимать ровно 8 байт в UTF-8 (сейчас {len(key_bytes)} байт).")
             continue
 
-        return key
+        return key_bytes
 
-    return "secretAd"
+    return b"ecliptic"
 
 
 # ФУНКЦИИ ШИФРОВАНИЯ
@@ -261,66 +264,64 @@ def make_round(left, right, round_key):
     return [(a + b) % 2 for a, b in zip(left, permuted_bits)]
 
 
-def encrypt(plaintext: str, key: str) -> str:
-    """Основная функция зашифровки"""
+def encrypt_block(block: bytes, key: bytes) -> bytes:
+    """Шифрует ровно 8 байт (64 бита)."""
     key_bits: list[int] = word_to_bits(key)
     permuted_key_bits: list[int] = permute_bits(key_bits, pc1)
-
     round_keys: list[list[int]] = get_round_keys(permuted_key_bits)
 
-    word_bits: list[int] = word_to_bits(plaintext)
+    word_bits: list[int] = word_to_bits(block)
     permuted_word_bits: list[int] = permute_bits(word_bits, ip)
-    left = permuted_word_bits[:32]
-    right = permuted_word_bits[32:]
+    left: list[int] = permuted_word_bits[:32]
+    right: list[int] = permuted_word_bits[32:]
     for round_key in round_keys:
         new_left: list[int] = make_round(left, right, round_key)
-        left: list[int] = right.copy()
-        right: list[int] = new_left.copy()
+        left, right = right, new_left
 
     cipher_bits: list[int] = permute_bits(right + left, ip_inverse)
-
     return bits_to_word(cipher_bits)
 
 
-def decrypt(ciphertext: str, key: str) -> str:
-    """Основная функция расшифровки"""
+def decrypt_block(block: bytes, key: bytes) -> bytes:
+    """Дешифрует ровно 8 байт (64 бита)."""
     key_bits: list[int] = word_to_bits(key)
     permuted_key_bits: list[int] = permute_bits(key_bits, pc1)
-
     round_keys: list[list[int]] = get_round_keys(permuted_key_bits)
-    word_bits: list[int] = word_to_bits(ciphertext, encoding="latin-1")
+
+    word_bits: list[int] = word_to_bits(block)
     permuted_word_bits: list[int] = permute_bits(word_bits, ip)
-    left = permuted_word_bits[:32]
-    right = permuted_word_bits[32:]
-    for round_key in round_keys[::-1]:
+    left: list[int] = permuted_word_bits[:32]
+    right: list[int] = permuted_word_bits[32:]
+    for round_key in reversed(round_keys):
         new_left: list[int] = make_round(left, right, round_key)
-        left: list[int] = right.copy()
-        right: list[int] = new_left.copy()
+        left, right = right, new_left
 
     plain_bits: list[int] = permute_bits(right + left, ip_inverse)
-
     return bits_to_word(plain_bits)
 
 
 # ФУНКЦИИ ДЛЯ ИСПОЛЬЗОВАНИЯ
 
-def encrypt_message(plaintext: str, key: str) -> str:
-    """Шифрует сообщения любой размерности добавляя нули в начало сообщения"""
-    plaintext: str = plaintext.zfill(math.ceil(len(plaintext) / 8) * 8)
-    splitted_plaintext: list[str] = [plaintext[i:i + 8] for i in range(0, len(plaintext), 8)]
-    return "".join(encrypt(part, key) for part in splitted_plaintext)
+def encrypt_message(data: bytes, key: bytes) -> bytes:
+    """Шифрует произвольные данные (байты)."""
+    # паддинг нулями до 8 байт
+    while len(data) % 8 != 0:
+        data = b"\x00" + data
+    blocks = [data[i:i + 8] for i in range(0, len(data), 8)]
+    return b"".join(encrypt_block(block, key) for block in blocks)
 
 
-def decrypt_message(ciphertext: str, key: str) -> str:
-    """Расшифровывает сообщения любой размерности добавляя нули в начало сообщения"""
-    ciphertext: str = ciphertext.zfill(math.ceil(len(ciphertext) / 8) * 8)
-    splitted_ciphertext: list[str] = [ciphertext[i:i + 8] for i in range(0, len(ciphertext), 8)]
-    return "".join(decrypt(part, key) for part in splitted_ciphertext)
+def decrypt_message(data: bytes, key: bytes) -> bytes:
+    """Дешифрует произвольные данные (байты)."""
+    while len(data) % 8 != 0:
+        data = b"\x00" + data
+    blocks = [data[i:i + 8] for i in range(0, len(data), 8)]
+    return b"".join(decrypt_block(block, key) for block in blocks)
 
 
 def main() -> None:
     """Entry point."""
-    key: str = "ecliptic"
+    key: bytes = b"ecliptic"
 
     while True:
         clear_screen()
@@ -333,15 +334,17 @@ def main() -> None:
               "4. Расшифровать")
         choice: str = input("Ваш выбор: ")
         if choice == "1":
-            print(f"Текущий ключ для шифрования: {key}")
+            print(f"Текущий ключ для шифрования: {key.decode('utf-8')}")
         elif choice == "2":
-            key: str = get_new_key()
+            key: bytes = get_new_key()
         elif choice == "3":
             message: str = input("Введите ваше сообщение: ")
-            print(f"Зашифрованное сообщение {encrypt_message(message, key)}")
+            encrypted_message = encrypt_message(message.encode('utf-8'), key)
+            print(f"Зашифрованное сообщение (hex) {encrypted_message.hex()}")
+            print(f"Или же в bin {bytes_to_bits(encrypted_message)}")
         elif choice == "4":
-            ciphertext: str = input("Введите зашифрованную строку: ")
-            print(f"Расшифрованное сообщение {decrypt_message(ciphertext, key)}")
+            ciphertext: str = input("Введите зашифрованную строку (hex): ")
+            print(f"Расшифрованное сообщение {decrypt_message(bytes.fromhex(ciphertext), key).decode('utf-8')}")
         elif choice == "5":
             print("Выход из шифратора")
             break
