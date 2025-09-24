@@ -16,9 +16,9 @@ class LFSR:
         if seed <= 0:
             raise ValueError("seed must be > 0")
 
-        self.width = seed.bit_length()
-        self.state = seed
-        self.taps_mask = 0
+        self.width: int = seed.bit_length()
+        self.state: int = seed
+        self.taps_mask: int = 0
         for i in taps:
             if not (0 <= i < self.width):
                 raise ValueError(f"tap index {i} out of range [0,{self.width-1}]")
