@@ -71,8 +71,10 @@ def main():
 
             lfsr = LFSR(seed, taps)
             bits = text_to_bits(text)
-            ks = lfsr.keystream(len(bits))
-            cipher_bits = xor_bits(bits, ks)
+            lfsr_bits = lfsr.bits(len(bits))
+            cipher_bits: list[int] = []
+            for i in range(len(bits)):
+                cipher_bits.append(lfsr_bits.__next__() ^ bits[i])
             print("🔒 Шифротекст (биты):")
             print("".join(map(str, cipher_bits)))
 
