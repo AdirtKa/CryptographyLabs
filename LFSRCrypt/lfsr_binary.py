@@ -8,15 +8,31 @@ def bytes_to_bits(data: bytes) -> str:
 def encrypt(plaintext: str, lfsr: LFSR) -> bytes:
     """Шифрует строку с помощью LFSR и XOR."""
     string_bytes = plaintext.encode("utf-8")
-    keystream = lfsr.bytes(len(string_bytes))
-    encrypted = bytes(a ^ b for a, b in zip(string_bytes, keystream))
-    return encrypted
+    bits_in_byte: int = 8
+    keystream = lfsr.bits(len(string_bytes) * bits_in_byte)
+    encrypted: bytearray = bytearray()
+    for byte in string_bytes:
+        new_byte: int = 0
+        for i in range(bits_in_byte):
+            cipher_bit = ((byte >> i) & 0x1) ^ next(keystream)
+            new_byte |= cipher_bit << i
+        encrypted.append(new_byte)
+
+    return bytes(encrypted)
 
 
 def decrypt(ciphertext: bytes, lfsr: LFSR) -> str:
     """Расшифровка: повторяем XOR с тем же LFSR."""
-    keystream = lfsr.bytes(len(ciphertext))
-    decrypted = bytes(a ^ b for a, b in zip(ciphertext, keystream))
+    bits_in_byte: int = 8
+    keystream = lfsr.bits(len(ciphertext) * bits_in_byte)
+    decrypted: bytearray = bytearray()
+    for byte in ciphertext:
+        new_byte: int = 0
+        for i in range(bits_in_byte):
+            plain_bit = ((byte >> i) & 0x1) ^ next(keystream)
+            new_byte |= plain_bit << i
+        decrypted.append(new_byte)
+
     return decrypted.decode("utf-8")
 
 
@@ -50,7 +66,6 @@ def main():
                 length = len(seed_str)
                 taps_str = input("Taps (через запятую, индексы 0=LSB): ").strip()
                 taps = [int(x) for x in taps_str.split(",") if x.strip()]
-
                 if length <= 0:
                     print("Ошибка: длина должна быть > 0")
                     continue
