@@ -1,3 +1,4 @@
+from typing import Generator
 from LFSR import LFSR
 
 
@@ -9,7 +10,7 @@ def encrypt(plaintext: str, lfsr: LFSR) -> bytes:
     """Шифрует строку с помощью LFSR и XOR."""
     string_bytes = plaintext.encode("utf-8")
     bits_in_byte: int = 8
-    keystream = lfsr.bits(len(string_bytes) * bits_in_byte)
+    keystream: Generator = lfsr.bits(len(string_bytes) * bits_in_byte)
     encrypted: bytearray = bytearray()
     for byte in string_bytes:
         new_byte: int = 0
