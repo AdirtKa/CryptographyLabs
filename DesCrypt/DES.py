@@ -152,8 +152,9 @@ def get_decimal_from_first_last(bits_list):
     """
     first_bit = bits_list[0]
     last_bit = bits_list[-1]
+    test_binary = (first_bit << 1) | last_bit
     binary_string = str(first_bit) + str(last_bit)
-    return int(binary_string, 2)
+    return test_binary
 
 
 def get_decimal_from_middle(bits_list):
@@ -162,8 +163,13 @@ def get_decimal_from_middle(bits_list):
     Предполагается, что список имеет длину 6 элементов.
     """
     middle_bits = bits_list[1:5]  # Индексы 1, 2, 3, 4
+    result = 0
+    for idx, bit in enumerate(middle_bits):
+        result |= bit << (len(middle_bits) - idx - 1)
+
+
     binary_string = ''.join(str(bit) for bit in middle_bits)
-    return int(binary_string, 2)
+    return result
 
 
 def word_to_bits(data: bytes) -> list[int]:
