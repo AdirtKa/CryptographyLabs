@@ -58,7 +58,7 @@ def is_prime(n: int) -> bool:
     return True
 
 
-def generate_keys(init_state: Optional[tuple[int, int]] = None) -> tuple[int, int, int]:
+def generate_keys(*, init_state: Optional[tuple[int, int]] = None, bits_len: int = 10) -> tuple[int, int, int]:
     """
     Generate keys for rsa algorithm.
     return in format n, e, d
@@ -66,6 +66,7 @@ def generate_keys(init_state: Optional[tuple[int, int]] = None) -> tuple[int, in
     to cipher M use C = (M ** e) % n
     to decipher C use M = (C ** d) % n
 
+    :param bits_len: how many bits will be in initial numbers to generate keys
     :param init_state: initial state with p and q. Must be prime numbers
 
     :return: tuple[int, int, int]
@@ -75,8 +76,8 @@ def generate_keys(init_state: Optional[tuple[int, int]] = None) -> tuple[int, in
         if not is_prime(p) or not is_prime(q):
             raise ValueError("init_state must be prime numbers")
     else:
-        p: int = number.getPrime(10)
-        q: int = number.getPrime(10)
+        p: int = number.getPrime(bits_len)
+        q: int = number.getPrime(bits_len)
 
     n: int = p * q
 
