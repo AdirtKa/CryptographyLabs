@@ -1,0 +1,23 @@
+###
+GET localhost:8080/public_key
+
+###
+
+POST localhost:8080/decrypt_message
+Content-Type: application/json
+
+{
+
+  "message": [292429, 358564, 48405, 285936, 37589, 336375, 67149]
+
+}
+
+###
+
+POST localhost:8080/encrypt_message
+Content-Type: application/json
+
+{
+  "e": 65537,
+  "n": 143
+}
