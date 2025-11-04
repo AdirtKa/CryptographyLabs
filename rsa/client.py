@@ -5,7 +5,7 @@ from time import sleep
 from generate_keys import generate_keys
 from rsa import encrypt, decrypt
 
-API_URL: str = "http://localhost:8093"
+API_URL: str = "http://31.59.185.163:8093"
 
 
 def clear_screen() -> None:
