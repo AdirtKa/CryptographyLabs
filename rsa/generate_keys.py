@@ -90,9 +90,10 @@ def generate_keys(*, init_state: Optional[tuple[int, int]] = None, bits_len: int
 
 def main() -> None:
     """Entry point."""
-    n, e, d = generate_keys(init_state=(1231, 13))
+    n, e, d = generate_keys(bits_len=10)
 
     test_num: int = 42
+    print(n, e)
     cipher: int = (test_num ** e) % n
     decipher: int = (cipher ** d) % n
     print(decipher)

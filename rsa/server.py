@@ -40,10 +40,9 @@ async def encrypt_message(request: Request):
     return {"message": encrypted_text}
 
 
-
 def main() -> None:
     """Entry point."""
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="localhost", port=8093)
 
 
 if __name__ == '__main__':

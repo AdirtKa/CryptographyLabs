@@ -21,7 +21,7 @@ def encrypt(plaintext: Iterable[int], publickey: tuple[int, int]) -> list[int]:
     return encrypted_text
 
 
-def decrypt(ciphertext: Iterable[int], private_key: tuple[int, int]) -> list[int]:
+def decrypt(ciphertext: Iterable[int], private_key: tuple[int, int]) -> str:
     """
     Decrypt encrypted plaintext with private key.
 
@@ -31,12 +31,9 @@ def decrypt(ciphertext: Iterable[int], private_key: tuple[int, int]) -> list[int
     """
 
     d, n = private_key
-
-    decrypted_text: list[int] = []
-    for char in ciphertext:
-        decrypted_text.append((char ** d) % n)
-
-    return decrypted_text
+    decrypted_ints = [(char ** d) % n for char in ciphertext]
+    # Преобразуем каждое число в символ
+    return ''.join(chr(i) for i in decrypted_ints)
 
 
 def main() -> None:
@@ -44,7 +41,7 @@ def main() -> None:
     message: bytes = b"AdirtKa"
     n, e, d = generate_keys()
     encrypted_message = encrypt(message, (e, n))
-    decrypted_message = bytes(decrypt(encrypted_message, (d, n)))
+    decrypted_message = decrypt(encrypted_message, (d, n))
 
     print(f"{message=}")
     print(f"{encrypted_message=}")

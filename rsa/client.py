@@ -5,11 +5,11 @@ from time import sleep
 from generate_keys import generate_keys
 from rsa import encrypt, decrypt
 
-API_URL: str = "http://localhost:8080"
+API_URL: str = "http://localhost:8093"
 
 
 def clear_screen() -> None:
-    os.system("clear")
+    os.system("cls")
 
 
 def get_server_key() -> tuple[int, int]:
@@ -78,12 +78,12 @@ def main() -> None:
                 encrypted_message = encrypt(message, server_key)
                 print(f"Зашифрованное сообщение: {encrypted_message}")
                 response_message: list[int] = send_message(encrypted_message)
-                print(f"Сервер расшифровал: {bytes(response_message)}")
+                print(f"Сервер расшифровал: {response_message}")
             case "5":
                 response_message = receive_message((e, n))
                 print(f"Сервер прислал сообщение: {response_message}")
                 decrypted_message = decrypt(response_message, (d, n))
-                print(f"После расшифровки: {bytes(decrypted_message)}")
+                print(f"После расшифровки: {decrypted_message}")
             case "6":
                 exit(0)
 
