@@ -13,7 +13,7 @@ def get_coprime(phi: int) -> int:
     :param phi: Значение функции Эйлера для n
     :return: подходящее число e
     """
-    candidates = [257, 17, 3]
+    candidates = [65537, 257, 17, 3]
     for e in candidates:
         if gcd(phi, e) == 1:
             return e
