@@ -1,4 +1,6 @@
 import os
+import sys
+
 import requests
 from time import sleep
 
@@ -9,7 +11,10 @@ API_URL: str = "http://31.59.185.163:8093"
 
 
 def clear_screen() -> None:
-    os.system("cls")
+    if sys.platform.startswith("win"):
+        os.system("cls")
+
+    os.system("clear")
 
 
 def get_server_key() -> tuple[int, int]:
@@ -48,7 +53,7 @@ def main() -> None:
     """Entry point."""
     user_input: str = ""
     server_key: tuple[int, int] | None = None
-    n, e, d = generate_keys(bits_len=5)
+    n, e, d = generate_keys(bits_len=512)
     while True:
         clear_screen()
         print("1 - посмотреть текущие ключи")
@@ -62,7 +67,7 @@ def main() -> None:
             case "1":
                 print(f"{n=}\n{e=}\n{d=}")
             case "2":
-                n, e, d = generate_keys(bits_len=5)
+                n, e, d = generate_keys(bits_len=512)
                 print("Новые ключи")
                 print(f"{n=}\n{e=}\n{d=}")
             case "3":
@@ -81,6 +86,7 @@ def main() -> None:
                 print(f"Сервер расшифровал: {response_message}")
             case "5":
                 response_message = receive_message((e, n))
+                print(ord('H'))
                 print(f"Сервер прислал сообщение: {response_message}")
                 decrypted_message = decrypt(response_message, (d, n))
                 print(f"После расшифровки: {decrypted_message}")

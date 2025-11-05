@@ -11,7 +11,7 @@ def get_public_ip() -> str:
 
 
 app = FastAPI()
-keys: dict[str, int] = dict(zip(("n", "e", "d"), generate_keys(bits_len=5)))
+keys: dict[str, int] = dict(zip(("n", "e", "d"), generate_keys(bits_len=512)))
 
 
 @app.get("/public_key")

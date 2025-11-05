@@ -16,7 +16,7 @@ def encrypt(plaintext: Iterable[int], publickey: tuple[int, int]) -> list[int]:
 
     encrypted_text: list[int] = []
     for char in plaintext:
-        encrypted_text.append((char ** e) % n)
+        encrypted_text.append(pow(char, e, n))
 
     return encrypted_text
 
@@ -31,7 +31,7 @@ def decrypt(ciphertext: Iterable[int], private_key: tuple[int, int]) -> str:
     """
 
     d, n = private_key
-    decrypted_ints = [(char ** d) % n for char in ciphertext]
+    decrypted_ints = [pow(char, d, n) for char in ciphertext]
     # Преобразуем каждое число в символ
     return ''.join(chr(i) for i in decrypted_ints)
 

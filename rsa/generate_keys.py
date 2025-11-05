@@ -78,6 +78,8 @@ def generate_keys(*, init_state: Optional[tuple[int, int]] = None, bits_len: int
     else:
         p: int = number.getPrime(bits_len)
         q: int = number.getPrime(bits_len)
+        while q == p:
+            q = number.getPrime(bits_len)
 
     n: int = p * q
 
