@@ -13,7 +13,7 @@ def get_coprime(phi: int) -> int:
     :param phi: Значение функции Эйлера для n
     :return: подходящее число e
     """
-    candidates = [257, 17, 3]
+    candidates = [65537, 257, 17, 3]
     for e in candidates:
         if gcd(phi, e) == 1:
             return e
@@ -78,6 +78,8 @@ def generate_keys(*, init_state: Optional[tuple[int, int]] = None, bits_len: int
     else:
         p: int = number.getPrime(bits_len)
         q: int = number.getPrime(bits_len)
+        while q == p:
+            q = number.getPrime(bits_len)
 
     n: int = p * q
 
