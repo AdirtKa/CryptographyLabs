@@ -1,6 +1,7 @@
 import hashlib
 from typing import Tuple
 from elipticCurve.ECELGamal import EllipticCurve, Point, ECElGamal, PointEncoder
+from hash.sha256 import SHA256
 
 
 class MessageHasher:
@@ -18,8 +19,11 @@ class MessageHasher:
             Целое число (256-битный хеш)
         """
         message_bytes = message.encode('utf-8')
-        hash_object = hashlib.sha256(message_bytes)
-        return int.from_bytes(hash_object.digest(), byteorder='big')
+        sha256 = SHA256()
+        sha256.update(message_bytes)
+        return sha256.decdigest()
+        # hash_object = hashlib.sha256(message_bytes)
+        # return int.from_bytes(hash_object.digest(), byteorder='big')
 
     @staticmethod
     def hash_message_hex(message: str) -> str:
