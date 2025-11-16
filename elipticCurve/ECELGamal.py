@@ -1,5 +1,6 @@
 import random
 from typing import Optional, Tuple
+from hashlib import sha256
 
 
 class Point:
@@ -15,10 +16,10 @@ class Point:
             y: Y-координата точки
             curve: Эллиптическая кривая
         """
-        self.x = x
-        self.y = y
-        self.curve = curve
-        self.is_infinity = (x is None and y is None)
+        self.x: int = x
+        self.y: int = y
+        self.curve: EllipticCurve = curve
+        self.is_infinity: bool = (x is None and y is None)
 
     def __eq__(self, other: 'Point') -> bool:
         """Проверка равенства двух точек"""
@@ -184,6 +185,75 @@ class ECElGamal:
 
         return C1, C2
 
+    def sign(self, message: int, private_key: int) -> Tuple[int, int]:
+        """
+        ECDSA подпись сообщения
+
+        Args:
+            message: Хеш сообщения (целое число)
+            private_key: Приватный ключ подписанта
+
+        Returns:
+            (r, s) - компоненты подписи
+        """
+        while True:
+            # Генерируем случайное число k
+            k: int = random.randint(1, self.n - 1)
+
+            # Вычисляем R = k * G (случайную точку)
+            R: Point = self.G * k
+
+            # r - это x-координата точки R
+            r: int = R.x % self.n
+
+            if r == 0:
+                continue
+
+            # Вычисляем s = k^(-1) * (message + r * private_key) mod n
+            s: int = (pow(k, -1, self.n) * (message + r * private_key)) % self.n
+
+            if s == 0:
+                continue
+
+            return r, s
+
+    def verify(self, public_key: Point, message: int, signature: Tuple[int, int]) -> bool:
+        """
+        ECDSA верификация подписи
+
+        Args:
+            public_key: Публичный ключ подписанта
+            message: Хеш сообщения
+            signature: Кортеж (r, s)
+
+        Returns:
+            True если подпись валидна, False иначе
+        """
+        r, s = signature
+
+        # Проверка границ
+        if not (1 <= r < self.n and 1 <= s < self.n):
+            return False
+
+        # Вычисляем w = s^(-1) mod n
+        w: int = pow(s, -1, self.n)
+
+        # Вычисляем u1 = message * w mod n
+        u1: int = (message * w) % self.n
+
+        # Вычисляем u2 = r * w mod n
+        u2: int = (r * w) % self.n
+
+        # Вычисляем точку C = u1 * G + u2 * PublicKey
+        C: Point = u1 * self.G + u2 * public_key
+
+        # Проверяем точку на бесконечность
+        if C.is_infinity:
+            return False
+
+        # Проверяем: C.x mod n == r
+        return C.x % self.n == r
+
     def decrypt(self, C1: Point, C2: Point) -> Point:
         """
         Расшифрование сообщения
@@ -273,3 +343,32 @@ class PointEncoder:
             R = (R * b) % p
 
         return R
+
+
+def main() -> None:
+    """Entry point."""
+
+    message: int = 12345
+    curve: EllipticCurve = EllipticCurve(0, 7, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F)
+
+    # Базовая точка (координаты из secp256k1)
+    Gx = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+    Gy = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8
+    G = Point(Gx, Gy, curve)
+
+    # Порядок группы
+    n = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+
+    # Криптосистема
+    elgamal = ECElGamal(curve, G, n)
+    public_key, private_key = elgamal.generate_keys()
+
+    signature: Tuple[int, int] = elgamal.sign(message, private_key)
+    print(f"{message=}\n{signature=}")
+
+    verified: bool = elgamal.verify(public_key, message, signature)
+    print(f"{verified=}")
+
+
+if __name__ == '__main__':
+    main()

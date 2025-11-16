@@ -1,4 +1,40 @@
+import hashlib
+from typing import Tuple
 from elipticCurve.ECELGamal import EllipticCurve, Point, ECElGamal, PointEncoder
+
+
+class MessageHasher:
+    """Класс для хеширования сообщений с помощью SHA-256"""
+
+    @staticmethod
+    def hash_message(message: str) -> int:
+        """
+        Хеширование строкового сообщения в целое число
+
+        Args:
+            message: Строка сообщения
+
+        Returns:
+            Целое число (256-битный хеш)
+        """
+        message_bytes = message.encode('utf-8')
+        hash_object = hashlib.sha256(message_bytes)
+        return int.from_bytes(hash_object.digest(), byteorder='big')
+
+    @staticmethod
+    def hash_message_hex(message: str) -> str:
+        """
+        Хеширование сообщения с возвращением в формате hex
+
+        Args:
+            message: Строка сообщения
+
+        Returns:
+            Хеш в формате hex строки
+        """
+        message_bytes = message.encode('utf-8')
+        hash_object = hashlib.sha256(message_bytes)
+        return hash_object.hexdigest()
 
 
 class ECElGamalInterface:
@@ -7,7 +43,7 @@ class ECElGamalInterface:
     def __init__(self):
         """Инициализация интерфейса и криптосистемы"""
         # Инициализируем кривую с параметрами secp256k1
-        p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+        p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
         a = 0
         b = 7
 
@@ -27,6 +63,9 @@ class ECElGamalInterface:
         # Данные для хранения зашифрованных сообщений
         self.encrypted_messages = []
 
+        # Данные для хранения подписанных сообщений
+        self.signed_messages = []
+
     def print_separator(self, char: str = "=", length: int = 70):
         """Печать разделителя"""
         print(char * length)
@@ -39,9 +78,11 @@ class ECElGamalInterface:
         self.print_separator()
         print("1. Сгенерировать новую пару ключей")
         print("2. Посмотреть текущие ключи")
-        print("3. Зашифровать сообщение")
-        print("4. Расшифровать сообщение")
-        print("5. Выход")
+        print("3. Зашифровать сообщение (EC-ElGamal)")
+        print("4. Расшифровать сообщение (EC-ElGamal)")
+        print("5. Подписать сообщение (ECDSA)")
+        print("6. Верифицировать подпись (ECDSA)")
+        print("7. Выход")
         print("-" * 70)
 
     def generate_keys(self):
@@ -81,7 +122,7 @@ class ECElGamalInterface:
             return
 
         print("\n" + "-" * 70)
-        print("ШИФРОВАНИЕ СООБЩЕНИЯ")
+        print("ШИФРОВАНИЕ СООБЩЕНИЯ (EC-ElGamal)")
         print("-" * 70)
 
         message = input("\nВведите сообщение для шифрования: ")
@@ -135,7 +176,7 @@ class ECElGamalInterface:
             return
 
         print("\n" + "-" * 70)
-        print("РАСШИФРОВАНИЕ СООБЩЕНИЯ")
+        print("РАСШИФРОВАНИЕ СООБЩЕНИЯ (EC-ElGamal)")
         print("-" * 70)
 
         print("\nДоступные зашифрованные сообщения:")
@@ -176,17 +217,114 @@ class ECElGamalInterface:
 
         print("-" * 70)
 
+    def sign_message(self):
+        """Подписание сообщения с помощью ECDSA"""
+        if self.elgamal.private_key is None:
+            print("\n[ОШИБКА] Ключи еще не сгенерированы. Пожалуйста, сгенерируйте их первым.")
+            return
+
+        print("\n" + "-" * 70)
+        print("ПОДПИСАНИЕ СООБЩЕНИЯ (ECDSA)")
+        print("-" * 70)
+
+        message = input("\nВведите сообщение для подписания: ")
+
+        if not message:
+            print("[ОШИБКА] Сообщение не может быть пустым.")
+            return
+
+        print("\n[INFO] Вычисляю SHA-256 хеш сообщения...")
+        message_hash_hex = MessageHasher.hash_message(message) % self.n
+        print(f"✓ SHA-256 хеш (hex): {message_hash_hex}")
+
+        print("\n[INFO] Подписываю сообщение с помощью ECDSA...")
+        signature = self.elgamal.sign(message_hash_hex, self.elgamal.private_key)
+        r, s = signature
+
+        print("✓ Сообщение успешно подписано!")
+        print(f"\nПодпись ECDSA (r, s):")
+        print(f"  r = {r}")
+        print(f"  s = {s}")
+
+        # Сохраняем подписанное сообщение
+        self.signed_messages.append({
+            'message': message,
+            'message_hash': message_hash_hex,
+            'signature': signature,
+            'public_key': self.elgamal.public_key
+        })
+
+        print(f"\n[INFO] Подпись сохранена (ID: {len(self.signed_messages) - 1})")
+        print("-" * 70)
+
+    def verify_signature(self):
+        """Верификация подписи сообщения"""
+        if not self.signed_messages:
+            print("\n[ОШИБКА] Нет подписанных сообщений. Сначала подпишите что-то.")
+            return
+
+        print("\n" + "-" * 70)
+        print("ВЕРИФИКАЦИЯ ПОДПИСИ (ECDSA)")
+        print("-" * 70)
+
+        print("\nДоступные подписанные сообщения:")
+        for idx, msg in enumerate(self.signed_messages):
+            print(f"  {idx}. '{msg['message']}'")
+
+        try:
+            msg_id = int(input("\nВыберите ID сообщения для верификации: "))
+            if msg_id < 0 or msg_id >= len(self.signed_messages):
+                print("[ОШИБКА] Неверный ID сообщения.")
+                return
+        except ValueError:
+            print("[ОШИБКА] Введите корректный номер.")
+            return
+
+        signed_msg = self.signed_messages[msg_id]
+        message = signed_msg['message']
+        message_hash = signed_msg['message_hash']
+        signature = signed_msg['signature']
+        public_key = signed_msg['public_key']
+
+        print(f"\n[INFO] Верифицирую подпись для сообщения: '{message}'")
+
+        # Верифицируем подпись
+        is_valid = self.elgamal.verify(public_key, message_hash, signature)
+
+        print("-" * 70)
+
+        if is_valid:
+            print("\n✓ ПОДПИСЬ ВАЛИДНА!")
+            print("  Сообщение не было изменено и подписано правильным ключом.")
+        else:
+            print("\n✗ ПОДПИСЬ НЕВАЛИДНА!")
+            print("  Сообщение было изменено или подпись некорректна.")
+
+        # Попытаемся верифицировать с измененным сообщением
+        print("\n[INFO] Проверяю, что подпись отвергает измененное сообщение...")
+        fake_message = message + " (подделано)"
+        fake_message_hash = MessageHasher.hash_message(fake_message) % self.n
+        is_fake_valid = self.elgamal.verify(public_key, fake_message_hash, signature)
+
+        if not is_fake_valid:
+            print("✓ Измененное сообщение корректно отвергнуто!")
+        else:
+            print("✗ ОШИБКА: Измененное сообщение прошло верификацию!")
+
+        print("-" * 70)
+
     def run(self):
         """Главный цикл интерфейса"""
         print("\n")
         self.print_separator("*")
         print("Добро пожаловать в криптосистему Эль-Гамаля на эллиптической кривой!")
         print("Система инициализирована с параметрами кривой secp256k1")
+        print("Поддерживает шифрование, расшифрование и цифровые подписи (ECDSA)")
         self.print_separator("*")
 
         while True:
             self.print_menu()
-            choice = input("Выберите действие (1-5): ").strip()
+            choice = input("Выберите действие (1-7): ").strip()
 
             if choice == "1":
                 self.generate_keys()
@@ -197,12 +335,16 @@ class ECElGamalInterface:
             elif choice == "4":
                 self.decrypt_message()
             elif choice == "5":
+                self.sign_message()
+            elif choice == "6":
+                self.verify_signature()
+            elif choice == "7":
                 print("\n" + "=" * 70)
                 print("Спасибо за использование криптосистемы. До свидания!")
                 print("=" * 70 + "\n")
                 break
             else:
-                print("\n[ОШИБКА] Неверный выбор. Пожалуйста, выберите опцию от 1 до 5.")
+                print("\n[ОШИБКА] Неверный выбор. Пожалуйста, выберите опцию от 1 до 7.")
 
 
 if __name__ == "__main__":
